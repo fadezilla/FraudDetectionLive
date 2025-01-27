@@ -46,11 +46,6 @@ def predict():
     response = {"predictions": predictions.tolist(), "probabilities": probabilities.tolist()}
     return jsonify(response)
 
-@app.route("/start-simulation", methods=["POST"])
-def start_simulation():
-    subprocess.Popen(["python", "simulate_live_data.py"])
-    return jsonify({"message": "Simulation started"}), 200
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port, debug=True)
