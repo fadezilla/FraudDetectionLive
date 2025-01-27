@@ -11,6 +11,5 @@ project/predictions.log
 project/creditcard.csv
 C:\Users\HARLE\OneDrive\Skrivebord\FraudDetection\project\simulation.log
 *.log
-*.pkl
 *.csv
 .env
