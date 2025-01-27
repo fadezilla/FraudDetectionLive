@@ -119,7 +119,8 @@
 
         startSimulationButton.addEventListener("click", () => {
             if (!simulationRunning) {
-                fetch("/start-simulation", { method: "POST" });
+                fetch("/start-simulation", {method: "POST"})
+                fetch("/predict", { method: "POST" });
                 simulationRunning = true;
                 startSimulationButton.textContent = "Simulating...";
                 startSimulationButton.disabled = true;
