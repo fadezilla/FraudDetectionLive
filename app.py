@@ -1,13 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
-import threading
 import os
 import joblib
 import logging
 import pandas as pd
-from time import sleep
-from datetime import datetime
 
 load_dotenv()
 model = joblib.load("fraud_detection_model.pkl")
@@ -18,9 +15,6 @@ socketio = SocketIO(app)
 
 # Logging configuration
 logging.basicConfig(filename="predictions.log", level=logging.INFO)
-
-simulation_running = False  # Global flag for simulation
-simulation_paused = False
 
 @app.route("/")
 def index():
@@ -37,6 +31,7 @@ def predict():
     threshold = 0.22
     predictions = (probabilities > threshold).astype(int)
 
+    # Emit predictions via WebSocket
     for i, prob in enumerate(probabilities):
         result = {
             "Input": features.iloc[i].to_dict(),
@@ -49,22 +44,12 @@ def predict():
     response = {"predictions": predictions.tolist(), "probabilities": probabilities.tolist()}
     return jsonify(response)
 
+# WebSocket event handler for simulation control
 @socketio.on("control_simulation")
 def control_simulation(data):
-    global simulation_running, simulation_paused
-
     action = data.get("action")
-    if action == "start":
-        simulation_running = True
-        simulation_paused = False
-        socketio.emit("status", {"message": "Simulation started."})
-    elif action == "pause":
-        simulation_paused = True
-        socketio.emit("status", {"message": "Simulation paused."})
-    elif action == "restart":
-        simulation_running = True
-        simulation_paused = False
-        socketio.emit("status", {"message": "Simulation restarted."})
+    socketio.emit("control_simulation", {"action": action})  # Broadcast the action to the simulation script
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
