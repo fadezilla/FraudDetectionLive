@@ -21,6 +21,18 @@
         .header h1 {
             margin: 0;
         }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .controls button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
         .main-content {
             display: flex;
             flex-direction: column;
@@ -69,6 +81,11 @@
     <div class="header">
         <h1>Fraud Detection Monitoring System</h1>
     </div>
+    <div class="controls">
+        <button id="start-btn" style="background-color: #4CAF50; color: white;">Start Simulating</button>
+        <button id="pause-btn" style="background-color: #FF9800; color: white;">Pause Simulation</button>
+        <button id="restart-btn" style="background-color: #F44336; color: white;">Restart Simulation</button>
+    </div>
     <div class="main-content">
         <div id="fraud-box" class="box fraud-box">
             <h2>Fraudulent Transactions</h2>
@@ -82,34 +99,44 @@
     <script>
         const socket = io();
 
+        // Handle button clicks
+        document.getElementById("start-btn").addEventListener("click", () => {
+            socket.emit("control_simulation", { action: "start" });
+        });
+        document.getElementById("pause-btn").addEventListener("click", () => {
+            socket.emit("control_simulation", { action: "pause" });
+        });
+        document.getElementById("restart-btn").addEventListener("click", () => {
+            socket.emit("control_simulation", { action: "restart" });
+        });
+
+        // Handle predictions from the server
         socket.on("new_prediction", (data) => {
-    const allTransactionsBox = document.getElementById("all-transactions");
-    const fraudBox = document.getElementById("fraud-transactions");
+            const allTransactionsBox = document.getElementById("all-transactions");
+            const fraudBox = document.getElementById("fraud-transactions");
 
-    // Add to all transactions
-    const transactionItem = document.createElement("div");
-    transactionItem.className = "transaction-item";
-    transactionItem.innerHTML = `
-        <span><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</span>
-        <span><strong>Fraud:</strong> ${data.Prediction ? "Yes" : "No"}</span>
-    `;
-    allTransactionsBox.appendChild(transactionItem);
+            // Add to all transactions
+            const transactionItem = document.createElement("div");
+            transactionItem.className = "transaction-item";
+            transactionItem.innerHTML = `
+                <span><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</span>
+                <span><strong>Fraud:</strong> ${data.Prediction ? "Yes" : "No"}</span>
+            `;
+            allTransactionsBox.appendChild(transactionItem);
 
-    // Add to fraud box if fraudulent
-    if (data.Prediction === 1) {
-        const fraudItem = document.createElement("div");
-        fraudItem.className = "fraud-item";
-        fraudItem.innerHTML = `
-            <p><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</p>
-            <p><strong>Probability:</strong> ${(data.Probability * 100).toFixed(2)}%</p>
-            <p><strong>Fraudulent:</strong> Yes</p>
-        `;
-        fraudBox.appendChild(fraudItem);
-    }
+            // Add to fraud box if fraudulent
+            if (data.Prediction === 1) {
+                const fraudItem = document.createElement("div");
+                fraudItem.className = "fraud-item";
+                fraudItem.innerHTML = `
+                    <p><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</p>
+                    <p><strong>Probability:</strong> ${(data.Probability * 100).toFixed(2)}%</p>
+                `;
+                fraudBox.appendChild(fraudItem);
+            }
 
-    allTransactionsBox.scrollTop = allTransactionsBox.scrollHeight;
-});
-
+            allTransactionsBox.scrollTop = allTransactionsBox.scrollHeight;
+        });
     </script>
 </body>
 </html>
