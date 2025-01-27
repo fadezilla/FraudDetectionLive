@@ -62,12 +62,39 @@
             margin-bottom: 10px;
             text-align: center;
         }
+        .info-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 10;
+        }
+        .info-modal h3 {
+            margin-top: 0;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 5;
+        }
     </style>
     <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
 </head>
 <body>
     <div class="header">
         <h1>Fraud Detection Monitoring System</h1>
+        <button id="start-simulation">Start Simulating Credit Card Transactions</button>
     </div>
     <div class="main-content">
         <div id="fraud-box" class="box fraud-box">
@@ -79,37 +106,71 @@
             <div id="all-transactions"></div>
         </div>
     </div>
+    <div class="modal-overlay" id="modal-overlay"></div>
+    <div class="info-modal" id="info-modal">
+        <h3>Fraudulent Transaction Details</h3>
+        <p id="fraud-details"></p>
+        <button onclick="closeModal()">Close</button>
+    </div>
     <script>
         const socket = io();
+        const startSimulationButton = document.getElementById("start-simulation");
+        let simulationRunning = false;
+
+        startSimulationButton.addEventListener("click", () => {
+            if (!simulationRunning) {
+                fetch("/start-simulation", { method: "POST" });
+                simulationRunning = true;
+                startSimulationButton.textContent = "Simulating...";
+                startSimulationButton.disabled = true;
+            }
+        });
 
         socket.on("new_prediction", (data) => {
-    const allTransactionsBox = document.getElementById("all-transactions");
-    const fraudBox = document.getElementById("fraud-transactions");
+            const allTransactionsBox = document.getElementById("all-transactions");
+            const fraudBox = document.getElementById("fraud-transactions");
 
-    // Add to all transactions
-    const transactionItem = document.createElement("div");
-    transactionItem.className = "transaction-item";
-    transactionItem.innerHTML = `
-        <span><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</span>
-        <span><strong>Fraud:</strong> ${data.Prediction ? "Yes" : "No"}</span>
-    `;
-    allTransactionsBox.appendChild(transactionItem);
+            // Add to all transactions
+            const transactionItem = document.createElement("div");
+            transactionItem.className = "transaction-item";
+            transactionItem.innerHTML = `
+                <span><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</span>
+                <span><strong>Fraud:</strong> ${data.Prediction ? "Yes" : "No"}</span>
+            `;
+            allTransactionsBox.appendChild(transactionItem);
 
-    // Add to fraud box if fraudulent
-    if (data.Prediction === 1) {
-        const fraudItem = document.createElement("div");
-        fraudItem.className = "fraud-item";
-        fraudItem.innerHTML = `
-            <p><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</p>
-            <p><strong>Probability:</strong> ${(data.Probability * 100).toFixed(2)}%</p>
-            <p><strong>Fraudulent:</strong> Yes</p>
-        `;
-        fraudBox.appendChild(fraudItem);
-    }
+            // Add to fraud box if fraudulent
+            if (data.Prediction === 1) {
+                const fraudItem = document.createElement("div");
+                fraudItem.className = "fraud-item";
+                fraudItem.innerHTML = `
+                    <p><strong>Amount:</strong> ${data.Input.NormalizedAmount.toFixed(2)}</p>
+                    <p><strong>Probability:</strong> ${(data.Probability * 100).toFixed(2)}%</p>
+                    <button onclick="showFraudDetails(${JSON.stringify(data).replace(/"/g, '&quot;')})">Info</button>
+                `;
+                fraudBox.appendChild(fraudItem);
+            }
 
-    allTransactionsBox.scrollTop = allTransactionsBox.scrollHeight;
-});
+            allTransactionsBox.scrollTop = allTransactionsBox.scrollHeight;
+        });
 
+        function showFraudDetails(data) {
+            const modal = document.getElementById("info-modal");
+            const overlay = document.getElementById("modal-overlay");
+            const details = document.getElementById("fraud-details");
+
+            details.textContent = JSON.stringify(data, null, 2);
+            modal.style.display = "block";
+            overlay.style.display = "block";
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("info-modal");
+            const overlay = document.getElementById("modal-overlay");
+
+            modal.style.display = "none";
+            overlay.style.display = "none";
+        }
     </script>
 </body>
 </html>

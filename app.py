@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
+import subprocess
 import os
 import joblib
 import logging
@@ -44,6 +45,11 @@ def predict():
 
     response = {"predictions": predictions.tolist(), "probabilities": probabilities.tolist()}
     return jsonify(response)
+
+@app.route("/start-simulation", methods=["POST"])
+def start_simulation():
+    subprocess.Popen(["Python", "simulate_live_data.py"])
+    return jsonify({"message": "Simulation started"}), 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
