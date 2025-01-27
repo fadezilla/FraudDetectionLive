@@ -22,30 +22,6 @@ logging.basicConfig(filename="predictions.log", level=logging.INFO)
 def index():
     return render_template("index.html")
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    data = request.get_json()
-    if not data or "features" not in data:
-        return jsonify({"error": "Invalid input, 'features' key is required"}), 400
-
-    features = pd.DataFrame(data["features"])
-    probabilities = model.predict_proba(features)[:, 1]
-    threshold = 0.22
-    predictions = (probabilities > threshold).astype(int)
-
-    # Emit predictions via WebSocket
-    for i, prob in enumerate(probabilities):
-        result = {
-            "Input": features.iloc[i].to_dict(),
-            "Prediction": int(predictions[i]),
-            "Probability": float(prob),
-        }
-        logging.info(result)
-        socketio.emit("new_prediction", result)  
-
-    response = {"predictions": predictions.tolist(), "probabilities": probabilities.tolist()}
-    return jsonify(response)
-
 @app.route("/start-simulation", methods=["POST"])
 def start_simulation():
     subprocess.Popen(["Python", "simulate_live_data.py"])
