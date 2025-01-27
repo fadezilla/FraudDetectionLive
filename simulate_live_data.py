@@ -17,7 +17,7 @@ data.drop(["Amount", "Time"], axis=1, inplace=True)
 features = data.drop("Class", axis=1)
 actual_labels = data["Class"]
 
-url = "http://127.0.0.1:5000/predict"
+url = "https://fraud-detection-7f4v.onrender.com/predict"
 
 print("Starting simulation...")
 
