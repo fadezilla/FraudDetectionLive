@@ -1,15 +1,17 @@
 from flask import Flask, request, jsonify, render_template
 from flask_socketio import SocketIO
+from dotenv import load_dotenv
 import os
 import joblib
 import logging
 import pandas as pd
 from datetime import datetime
 
+load_dotenv()
 model = joblib.load("fraud_detection_model.pkl")
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get('FLASK_SECRET_KEY')
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 socketio = SocketIO(app)
 
 # Logging configuration
