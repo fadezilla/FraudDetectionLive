@@ -3,12 +3,17 @@
 
 import pandas as pd
 import joblib
+import os
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from imblearn.combine import SMOTEENN
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
 
+if not os.path.exists("creditcard.csv"):
+    print("Downloading dataset from Kaggle...")
+    os.system("kaggle datasets download -d mlg-ulb/creditcardfraud --unzip")
+    print("Dataset downloaded and extracted.")
 # Load and preprocess the dataset
 creditcard_df = pd.read_csv("creditcard.csv")
 scaler = StandardScaler()

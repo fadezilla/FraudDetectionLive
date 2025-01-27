@@ -2,8 +2,14 @@ import pandas as pd
 import requests
 import time
 import logging
+import os
 
 logging.basicConfig(filename="simulation.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+
+if not os.path.exists("creditcard.csv"):
+    print("Downloading dataset from Kaggle...")
+    os.system("kaggle datasets download -d mlg-ulb/creditcardfraud --unzip")
+    print("Dataset downloaded and extracted.")
 
 # Load the dataset
 data = pd.read_csv("creditcard.csv")
