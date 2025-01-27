@@ -24,7 +24,7 @@ def index():
 
 @app.route("/start-simulation", methods=["POST"])
 def start_simulation():
-    subprocess.Popen(["Python", "simulate_live_data.py"])
+    subprocess.Popen(["python", "simulate_live_data.py"])
     return jsonify({"message": "Simulation started"}), 200
 
 if __name__ == "__main__":
