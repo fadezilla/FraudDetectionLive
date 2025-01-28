@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
+import subprocess
 import joblib
 import logging
 import pandas as pd
@@ -15,6 +16,12 @@ socketio = SocketIO(app)
 
 # Logging configuration
 logging.basicConfig(filename="predictions.log", level=logging.INFO)
+
+def download_dataset():
+    if not os.path.exists("creditcard.csv"):
+        print("Downloading dataset...")
+        subprocess.run(["kaggle", "datasets", "download", "-d", "mlg-ulb/creditcardfraud", "--unzip"])
+        print("Dataset downloaded and extracted.")
 
 @app.route("/")
 def index():
@@ -52,5 +59,7 @@ def control_simulation(data):
 
 
 if __name__ == "__main__":
+    download_dataset()
     port = int(os.environ.get("PORT", 5000))
+    print(f"Starting Flask app on port {port}")  # Debug logging
     socketio.run(app, host="0.0.0.0", port=port, debug=True)

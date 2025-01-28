@@ -7,12 +7,6 @@ from socketio import Client
 
 logging.basicConfig(filename="simulation.log", level=logging.INFO, format="%(asctime)s - %(message)s")
 
-# Load dataset or download if not present
-if not os.path.exists("creditcard.csv"):
-    print("Downloading dataset from Kaggle...")
-    os.system("kaggle datasets download -d mlg-ulb/creditcardfraud --unzip")
-    print("Dataset downloaded and extracted.")
-
 data = pd.read_csv("creditcard.csv")
 
 # Process the dataset
