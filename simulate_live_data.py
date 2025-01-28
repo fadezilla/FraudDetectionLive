@@ -29,19 +29,20 @@ socket = Client()
 # Simulation state flags
 simulation_running = False
 simulation_paused = False
+current_index = 0  # Track the current transaction index
 
 
 def simulate_data():
-    global simulation_running, simulation_paused
+    global simulation_running, simulation_paused, current_index
 
     print("Simulation process started.")
-    for i in range(len(features)):
+    while True:
         # Wait until simulation is started and not paused
         while not simulation_running or simulation_paused:
             time.sleep(0.1)
 
         # Prepare and send a simulated transaction
-        row = features.iloc[i:i + 1].to_dict(orient="records")
+        row = features.iloc[current_index:current_index + 1].to_dict(orient="records")
         payload = {"features": row}
 
         try:
@@ -57,13 +58,17 @@ def simulate_data():
             logging.error(f"Exception occurred: {str(e)}")
             print(f"Exception occurred: {str(e)}")
 
+        current_index += 1
+        if current_index >= len(features):
+            current_index = 0  # Restart from the beginning
+
         time.sleep(0.5)  # Simulate delay between transactions
 
 
 # WebSocket event handlers
 @socket.on("control_simulation")
 def handle_control(data):
-    global simulation_running, simulation_paused
+    global simulation_running, simulation_paused, current_index
     action = data.get("action")
     if action == "start":
         simulation_running = True
@@ -75,6 +80,7 @@ def handle_control(data):
     elif action == "restart":
         simulation_running = True
         simulation_paused = False
+        current_index = 0  # Reset to the first transaction
         print("Simulation restarted.")
 
 
