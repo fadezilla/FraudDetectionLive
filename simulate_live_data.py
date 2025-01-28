@@ -2,8 +2,19 @@ import pandas as pd
 import requests
 import time
 import os
+import subprocess
 from socketio import Client
 
+if not os.path.exists("creditcard.csv"):
+    print("Downloading dataset from Kaggle...")
+    try:
+        subprocess.run(["kaggle", "datasets", "download", "-d", "mlg-ulb/creditcardfraud", "--unzip"], check=True)
+        print("Dataset downloaded and extracted.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error downloading dataset: {e}")
+        raise
+
+time.sleep(10)
 data = pd.read_csv("creditcard.csv")
 
 # Process the dataset
