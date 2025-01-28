@@ -50,16 +50,19 @@
         </div>
     </div>
     <script>
-        const socket = io();
+        const socket = io("https://fraud-detection-7f4v.onrender.com");
 
         // Handle button clicks
         document.getElementById("start-btn").addEventListener("click", () => {
+            console.log("Start button clicked");  // Debug logging
             socket.emit("control_simulation", { action: "start" });
         });
         document.getElementById("pause-btn").addEventListener("click", () => {
+            console.log("Pause button clicked");  // Debug logging
             socket.emit("control_simulation", { action: "pause" });
         });
         document.getElementById("restart-btn").addEventListener("click", () => {
+            console.log("Restart Button clicked");  // Debug logging
             socket.emit("control_simulation", { action: "restart" });
         });
 

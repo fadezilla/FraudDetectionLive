@@ -11,7 +11,7 @@ model = joblib.load("fraud_detection_model.pkl")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 def download_dataset():
     if not os.path.exists("creditcard.csv"):
@@ -54,12 +54,13 @@ def predict():
 @socketio.on("control_simulation")
 def control_simulation(data):
     action = data.get("action")
+    print(f"Received control_simulation event with action: {action}")  # Debug logging
     socketio.emit("control_simulation", {"action": action})  # Broadcast the action to the simulation script
 
 
 if __name__ == "__main__":
     download_dataset()
-    
+
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Flask app on port {port}")  # Debug logging
     socketio.run(app, host="0.0.0.0", port=port, debug=True)
