@@ -54,7 +54,6 @@ def predict():
 @socketio.on("control_simulation")
 def control_simulation(data):
     action = data.get("action")
-    print(f"Received control_simulation event with action: {action}")  # Debug logging
     socketio.emit("control_simulation", {"action": action})  # Broadcast the action to the simulation script
 
 
@@ -63,4 +62,4 @@ if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Flask app on port {port}")  # Debug logging
-    socketio.run(app, host="0.0.0.0", port=port, debug=True)
+    socketio.run(app, host="0.0.0.0", port=port, debug=False)

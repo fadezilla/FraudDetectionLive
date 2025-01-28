@@ -21,7 +21,7 @@ socket = Client()
 simulation_running = False
 simulation_paused = False
 current_index = 0  # Track the current transaction index
-
+batch_size = 20
 
 def simulate_data():
     global simulation_running, simulation_paused, current_index
@@ -33,24 +33,24 @@ def simulate_data():
             time.sleep(0.1)
 
         # Prepare and send a simulated transaction
-        row = features.iloc[current_index:current_index + 1].to_dict(orient="records")
-        payload = {"features": row}
+        batch = features.iloc[current_index : current_index + batch_size].to_dict(orient="records")
+        payload = {"features": batch}
 
         try:
             response = requests.post(url, json=payload)
             if response.status_code == 200:
                 result = response.json()
-                print(f"Sent Input: {row[0]} | Prediction: {result['predictions'][0]}")
+                for i, pred in enumerate(result["predictions"]):
+                    print(f"Sent Input: {batch[i]} | Prediction: {pred}")
             else:
                 print(f"Error: {response.status_code} - {response.text}")
         except Exception as e:
             print(f"Exception occurred: {str(e)}")
 
-        current_index += 1
+        current_index += batch_size
         if current_index >= len(features):
             current_index = 0  # Restart from the beginning
 
-        time.sleep(0.5)  # Simulate delay between transactions
 
 
 # WebSocket event handlers

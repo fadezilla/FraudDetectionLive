@@ -16,6 +16,10 @@
         .transaction-item:hover {
             background-color: #f9fafb;
         }
+        /* Hide the info panel by default (Tailwind 'hidden' class) */
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -50,7 +54,8 @@
         </div>
     </div>
     <script>
-        const socket = io("https://fraud-detection-7f4v.onrender.com");
+        // Change to your local or production Socket.IO endpoint
+        const socket = io("https://fraud-detection-7f4v.onrender.com/");
 
         // Handle button clicks
         document.getElementById("start-btn").addEventListener("click", () => {
@@ -64,6 +69,9 @@
         document.getElementById("restart-btn").addEventListener("click", () => {
             console.log("Restart Button clicked");  // Debug logging
             socket.emit("control_simulation", { action: "restart" });
+
+            document.getElementById("all-transactions").innerHTML = "";
+            document.getElementById("fraud-transactions").innerHTML = "";
         });
 
         // Handle predictions from the server
@@ -86,15 +94,42 @@
             if (data.Prediction === 1) {
                 const fraudItem = document.createElement("div");
                 fraudItem.className = "fraud-item p-3 rounded-lg";
-                fraudItem.innerHTML = `
-                    <div class="space-y-1">
-                        <p class="font-medium">Amount: $${data.Input.NormalizedAmount.toFixed(2)}</p>
-                        <p class="text-sm">Probability: ${(data.Probability * 100).toFixed(2)}%</p>
-                    </div>
+
+                // Create container for main fraud info
+                const fraudInfoContainer = document.createElement("div");
+                fraudInfoContainer.className = "space-y-1";
+                fraudInfoContainer.innerHTML = `
+                    <p class="font-medium">Amount: $${data.Input.NormalizedAmount.toFixed(2)}</p>
+                    <p class="text-sm">Probability: ${(data.Probability * 100).toFixed(2)}%</p>
                 `;
+                
+                // Create the info button
+                const infoButton = document.createElement("button");
+                infoButton.className = "mt-2 bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600";
+                infoButton.innerText = "Info";
+
+                // Create the info panel (hidden by default)
+                const infoPanel = document.createElement("div");
+                infoPanel.className = "hidden mt-2 p-2 border border-gray-300 rounded";
+                infoPanel.innerHTML = `
+                    <p class="font-bold mb-1">Transaction Details</p>
+                    <pre class="text-xs bg-gray-50 p-2 rounded">${JSON.stringify(data.Input, null, 2)}</pre>
+                `;
+
+                // Toggle info panel on button click
+                infoButton.addEventListener("click", () => {
+                    infoPanel.classList.toggle("hidden");
+                });
+
+                // Append everything
+                fraudItem.appendChild(fraudInfoContainer);
+                fraudItem.appendChild(infoButton);
+                fraudItem.appendChild(infoPanel);
+
                 fraudBox.appendChild(fraudItem);
             }
 
+            // Scroll to bottom of all transactions
             allTransactionsBox.scrollTop = allTransactionsBox.scrollHeight;
         });
     </script>
