@@ -1,11 +1,8 @@
 import pandas as pd
 import requests
 import time
-import logging
 import os
 from socketio import Client
-
-logging.basicConfig(filename="simulation.log", level=logging.INFO, format="%(asctime)s - %(message)s")
 
 data = pd.read_csv("creditcard.csv")
 
@@ -43,13 +40,10 @@ def simulate_data():
             response = requests.post(url, json=payload)
             if response.status_code == 200:
                 result = response.json()
-                logging.info(f"Input: {row[0]} - Prediction: {result['predictions'][0]} - Probability: {result['probabilities'][0]:.2f}")
                 print(f"Sent Input: {row[0]} | Prediction: {result['predictions'][0]}")
             else:
-                logging.error(f"Error: {response.status_code} - {response.text}")
                 print(f"Error: {response.status_code} - {response.text}")
         except Exception as e:
-            logging.error(f"Exception occurred: {str(e)}")
             print(f"Exception occurred: {str(e)}")
 
         current_index += 1

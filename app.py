@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 import subprocess
 import joblib
-import logging
 import pandas as pd
 
 load_dotenv()
@@ -14,14 +13,15 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 socketio = SocketIO(app)
 
-# Logging configuration
-logging.basicConfig(filename="predictions.log", level=logging.INFO)
-
 def download_dataset():
     if not os.path.exists("creditcard.csv"):
-        print("Downloading dataset...")
-        subprocess.run(["kaggle", "datasets", "download", "-d", "mlg-ulb/creditcardfraud", "--unzip"])
-        print("Dataset downloaded and extracted.")
+        print("Downloading dataset from Kaggle...")
+        try:
+            subprocess.run(["kaggle", "datasets", "download", "-d", "mlg-ulb/creditcardfraud", "--unzip"], check=True)
+            print("Dataset downloaded and extracted.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error downloading dataset: {e}")
+            raise
 
 @app.route("/")
 def index():
@@ -45,7 +45,6 @@ def predict():
             "Prediction": int(predictions[i]),
             "Probability": float(prob),
         }
-        logging.info(result)
         socketio.emit("new_prediction", result)
 
     response = {"predictions": predictions.tolist(), "probabilities": probabilities.tolist()}
@@ -60,6 +59,7 @@ def control_simulation(data):
 
 if __name__ == "__main__":
     download_dataset()
+    
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Flask app on port {port}")  # Debug logging
     socketio.run(app, host="0.0.0.0", port=port, debug=True)
