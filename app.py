@@ -12,7 +12,7 @@ model = joblib.load("fraud_detection_model.pkl")
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 socketio = SocketIO(app, cors_allowed_origins="*")
-
+port = int(os.environ.get("PORT", 5000))
 def download_dataset():
     if not os.path.exists("creditcard.csv"):
         print("Downloading dataset from Kaggle...")
